@@ -66,11 +66,14 @@ Template.main.events({
 /// once we remove autopublich
 if (Meteor.isServer) {
   Meteor.publish('todos', function(){
-    //to allow user to only find his/her todos
-    return Todos.find({userId: this.userId});
+    if(!this.userId){
+    return Todos.find();
+    }else {
+      //to allow user to only find his/her todos
+      return Todos.find({userId: this.userId});
+    }
   });
 }
-
 
 
 //after removing insecure
@@ -79,7 +82,7 @@ Meteor.methods({
   addTodo: function(text){
     if(!Meteor.userId()){
       throw new Meteor.Error("Not Authorized");
-    };
+    }
     Todos.insert({
       text: text,
       createdAt: new Date(),
@@ -90,7 +93,7 @@ Meteor.methods({
   //delete
   deleteTodo: function(todoId){
     var todo = Todos.findOne(todoId);
-    if(todo.userId !== Meteor.userId){
+    if(todo.userId !== Meteor.userId()){
       throw new Meteor.Error("Not Authorized");
     }
     Todos.remove(todoId);
@@ -99,10 +102,10 @@ Meteor.methods({
   setChecked: function(todoId, setChecked){
     //creating user can only see users todos
     var todo = Todos.findOne(todoId);
-    if(todo.userId !== Meteor.userId){
+    if(todo.userId !== Meteor.userId()){
       throw new Meteor.Error("Not Authorized");
     }
-    Todos.update(todoId, {$set: {checked: setChecked}});
+    Todos.update(todoId, {$set:{checked: setChecked}});
   }
 });
 
